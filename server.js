@@ -9,13 +9,13 @@ server.use(express.static('public'))
 server.use(express.urlencoded({ extended: true }))
 
 //Configuração da conexão com o banco de dados
-const Pool = require('mysql').Pool
+const Pool = require('pg').Pool
 const db = new Pool({
-    user: '',
-    password: '',
-    host: '',
-    port: '',
-    database: ''
+    user: 'postgres',
+    password: 'dev2019',
+    host: 'localhost',
+    port: '5432',
+    database: 'donorsbank'
 })
 
 //Configuração do Nunjucks(Template Engine)
@@ -24,25 +24,6 @@ nunjucks.configure("./", {
     express: server,
     noCache: true
 })
-
-
-const donors = [{
-        name: "Ilka Uehara",
-        blood: "O-"
-    },
-    {
-        name: "Henrique Rodrigues",
-        blood: "A+"
-    },
-    {
-        name: "Neusa Maciel",
-        blood: "O-"
-    },
-    {
-        name: "Nicholas Seigi",
-        blood: "A+"
-    }
-]
 
 //Configurar a apresentação da página
 server.get("/", function(req, res) {
@@ -60,23 +41,17 @@ server.post("/", function(req, res) {
     const email = req.body.email
     const blood = req.body.blood
 
-    //Coloca valores no Array
-    donors.push({
-        name: name,
-        blood: blood
-    })
-
     if(name == "" || email == "" || blood == ""){
         return res.send("Todos os campos são obrigatórios")
     }
 
     //Coloca os dados no banco de dados
-    const query = `INSERT INTO doners ("name", "email", "blood") VALUES ($1, $2, $3)`
+    const query = `INSERT INTO donors ("name", "email", "blood") VALUES ($1, $2, $3)`
     const values = [name, email, blood]
 
     db.query(query, values, function(err){
         //Fluxo de erro
-        if(err) return res.send("Erro no banco de dados")
+        if(err) return res.send("Erro no banco de dados"+err)
 
         //Fluxo ideal .Redireciona para o index
         return res.redirect("/")
